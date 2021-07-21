@@ -325,7 +325,6 @@ module system (
    wire [15:0]opl3left;
    wire [15:0]opl3right;
    wire stb44100;
-	//assign LED = {1'b0, !cpu32_halt, AUD_L, AUD_R, planarreq, |sys_cmd_ack, ~SD_n_CS, HALT};
 	assign frame_on = s_displ_on[16+vgatext[1]];
 
 	assign PORT_IN[15:8] = 
@@ -351,7 +350,7 @@ module system (
 	assign BIOS_REQ = sys_wr_data_valid;
 	reg [15:0] BIOS_data;
 	reg        BIOS_data_valid;
-	reg  [1:0] auto_flush = 2'b00;
+	reg  [1:0] auto_flush = 2'b00; // decod81
 
 	SDRAM_16bit SDR
 	(
@@ -508,8 +507,7 @@ module system (
 		.hiaddr(cache_hi_addr),
 		.cache_write_data(crw && sys_rd_data_valid),
 		.cache_read_data(crw && sys_wr_data_valid),
-		.flush(auto_flush==2'b10)
-		//.flush(auto_flush==2'b01)
+		.flush(auto_flush==2'b01) // decod81
 	);
 
 	wire I_KB;
@@ -539,7 +537,6 @@ module system (
 	wire [7:0]PIC_IVECT;
 	wire INT;
 	wire timer_int;
-	//wire I_COM1;
 	PIC_8259 PIC 
 	(
 		 .RST(!rstcount[18]),
@@ -654,8 +651,7 @@ module system (
 
 	reg nop;
 	always @ (posedge clk_sdr) begin
-		//s_prog_full <= fifo_wr_used_words > 350; // AlmostFull
-		s_prog_full <= fifo_wr_used_words > 320; // AlmostFull
+		s_prog_full <= fifo_wr_used_words > 350; // AlmostFull
 		if(fifo_wr_used_words < 64) s_prog_empty <= 1'b1; // AlmostEmpty
 		else begin
 			s_prog_empty <= 1'b0;
@@ -726,7 +722,7 @@ module system (
 		end
 		if(KB_RST || BTN_RESET) rstcount <= 0;
 		else if(CPU_CE && ~rstcount[18]) rstcount <= rstcount + 1'b1;
-		auto_flush[1:0] <= {auto_flush[0], hblnk};
+		auto_flush[1:0] <= {auto_flush[0], hblnk}; // decod81
 	end
 
 	always @ (posedge clk_25)
