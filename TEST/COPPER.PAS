@@ -12,8 +12,11 @@ begin
   x := 0;
   i := 1;
   repeat
-    while (port[$3da] and 8)<>0 do;
-    while (port[$3da] and 8)=0 do;
+    while (port[$3da] and 8)=0 do; { wait for visible part of the frame to end }
+    port[$3c8] := 0;
+    port[$3c9] := 63;
+    port[$3c9] := 0;
+    port[$3c9] := 0;
     for y := 0 to 199 do
       mem[$a000:x+y*320] := 0;
     inc(x, i);
@@ -21,61 +24,100 @@ begin
     if x = 319 then i := -i;
     for y := 0 to 199 do
       mem[$a000:x+y*320] := 15;
-
+    while (port[$3da] and 8)<>0 do; { wait for invisible part of the frame to end }
+    while (port[$3da] and 1)=0 do; { wait for visible part of the scanline to end }
+    port[$3c8] := 0;
+    port[$3c9] := 0;
+    port[$3c9] := 31;
+    port[$3c9] := 63;
+    while (port[$3da] and 1)<>0 do; { wait for invisible part of the scanline to end }
+    while (port[$3da] and 1)=0 do; { wait for visible part of the scanline to end }
+    port[$3c8] := 0;
+    port[$3c9] := 0;
+    port[$3c9] := 31;
+    port[$3c9] := 63;
+    while (port[$3da] and 1)<>0 do; { wait for invisible part of the scanline to end }
+    while (port[$3da] and 1)=0 do;
     port[$3c8] := 0;
     port[$3c9] := 63;
     port[$3c9] := 0;
     port[$3c9] := 0;
-
     while (port[$3da] and 1)<>0 do;
     while (port[$3da] and 1)=0 do;
     port[$3c8] := 0;
     port[$3c9] := 0;
-    port[$3c9] := 0;
-    port[$3c9] := 0;
-
-    while (port[$3da] and 1)<>0 do;
-    while (port[$3da] and 1)=0 do;
-    port[$3c8] := 0;
-    port[$3c9] := 0;
+    port[$3c9] := 31;
     port[$3c9] := 63;
-    port[$3c9] := 0;
-
     while (port[$3da] and 1)<>0 do;
     while (port[$3da] and 1)=0 do;
     port[$3c8] := 0;
     port[$3c9] := 0;
-    port[$3c9] := 0;
-    port[$3c9] := 0;
-
+    port[$3c9] := 31;
+    port[$3c9] := 63;
     while (port[$3da] and 1)<>0 do;
     while (port[$3da] and 1)=0 do;
     port[$3c8] := 0;
     port[$3c9] := 63;
+    port[$3c9] := 0;
+    port[$3c9] := 0;
+    while (port[$3da] and 1)<>0 do;
+    while (port[$3da] and 1)=0 do;
+    port[$3c8] := 0;
+    port[$3c9] := 0;
+    port[$3c9] := 31;
+    port[$3c9] := 63;
+    while (port[$3da] and 1)<>0 do;
+    while (port[$3da] and 1)=0 do;
+    port[$3c8] := 0;
+    port[$3c9] := 0;
+    port[$3c9] := 31;
+    port[$3c9] := 63;
+    while (port[$3da] and 1)<>0 do;
+    while (port[$3da] and 1)=0 do;
+    port[$3c8] := 0;
     port[$3c9] := 63;
     port[$3c9] := 0;
-
+    port[$3c9] := 0;
+    while (port[$3da] and 1)<>0 do;
+    while (port[$3da] and 1)=0 do;
+    port[$3c8] := 0;
+    port[$3c9] := 0;
+    port[$3c9] := 31;
+    port[$3c9] := 63;
+    while (port[$3da] and 1)<>0 do;
+    while (port[$3da] and 1)=0 do;
+    port[$3c8] := 0;
+    port[$3c9] := 0;
+    port[$3c9] := 31;
+    port[$3c9] := 63;
+    while (port[$3da] and 1)<>0 do;
+    while (port[$3da] and 1)=0 do;
+    port[$3c8] := 0;
+    port[$3c9] := 63;
+    port[$3c9] := 0;
+    port[$3c9] := 0;
     while (port[$3da] and 1)<>0 do;
     while (port[$3da] and 1)=0 do;
     port[$3c8] := 0;
     port[$3c9] := 0;
     port[$3c9] := 0;
     port[$3c9] := 0;
-    for y := 0 to 99 do begin
+
+    {
+    for y := 0 to 16 do begin
       while (port[$3da] and 1)<>0 do;
       while (port[$3da] and 1)=0 do;
       port[$3c8] := 0;
       port[$3c9] := 63;
       port[$3c9] := 0;
       port[$3c9] := 63;
-
       while (port[$3da] and 1)<>0 do;
       while (port[$3da] and 1)=0 do;
       port[$3c8] := 0;
       port[$3c9] := 0;
       port[$3c9] := 0;
       port[$3c9] := 0;
-    end;
+    end;}
   until x = 0;
 
   asm

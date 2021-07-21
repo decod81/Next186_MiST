@@ -37,10 +37,10 @@ begin
 
   x := 0;
   y := 0;
-  z := 1;
+  z := 0;
   i := 1;
   j := 1;
-  k := 2;
+  k := 1;
   repeat
     while (port[$3da] and 8)=0 do;
     while (port[$3da] and 8)<>0 do;
@@ -54,7 +54,7 @@ begin
       i := -i;
 
     inc(z, k);
-    if (z = 1) or (z = 101) then
+    if (z = 0) or (z = 400) then
       k := -k;
 
     { line compare bits and pixel panning/shift }
@@ -79,7 +79,7 @@ begin
       mov dx, 3c0h
       mov al, 30h
       out dx, al
-      mov al, 31h
+      mov al, 21h
       out dx, al
       mov al, 33h
       out dx, al
@@ -104,7 +104,7 @@ begin
 
   asm
     sti
-    mov ax, 3
+    mov al, 03h
     int 10h
   end;
 end.
