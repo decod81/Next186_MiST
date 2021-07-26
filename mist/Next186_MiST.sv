@@ -58,9 +58,15 @@ wire        clk_sys = clk_25;
 
 assign SDRAM_CKE = 1'b1;
 
+pitopl pitopl (
+	.inclk0(CLOCK_27),
+	.c0(clk_OPL),
+	.c1(clk_25)
+);
+
 dcm dcm_system (
 	.inclk0(CLOCK_27), 
-	.c0(clk_25), 
+	.c0(), 
 	.c1(clk_sdr),
 	.c2(SDRAM_CLK),
 	.c3(clk_50)
@@ -72,7 +78,7 @@ dcm_misc dcm_misc (
 	.c1(CLK14745600)
 );
 
-wire        clk_cpu, clk_dsp;
+wire clk_cpu, clk_dsp;
 dcm_cpu dcm_cpu_inst (
 	.inclk0(CLOCK_27), 
 	.c0(clk_cpu),
@@ -314,6 +320,7 @@ system sys_inst (
 	.CLK44100x256(CLK44100x256),
 	.CLK14745600(CLK14745600),
 	.clk_50(clk_50),
+	.clk_OPL(clk_OPL),
 
 	.clk_cpu(clk_cpu),
 	.clk_dsp(clk_dsp),

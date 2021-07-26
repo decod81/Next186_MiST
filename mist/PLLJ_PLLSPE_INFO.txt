@@ -4,12 +4,17 @@ PLLSPEmax	84
 PLLSPEmin	-53
 
 PLL_Name	dcm_cpu:dcm_cpu_inst|altpll:altpll_component|dcm_cpu_altpll:auto_generated|pll1
-PLLJITTER	37
+PLLJITTER	20
 PLLSPEmax	84
 PLLSPEmin	-53
 
 PLL_Name	dcm_misc:dcm_misc|altpll:altpll_component|dcm_misc_altpll:auto_generated|pll1
 PLLJITTER	31
+PLLSPEmax	84
+PLLSPEmin	-53
+
+PLL_Name	pitopl:pitopl|altpll:altpll_component|pitopl_altpll:auto_generated|pll1
+PLLJITTER	37
 PLLSPEmax	84
 PLLSPEmin	-53
 
