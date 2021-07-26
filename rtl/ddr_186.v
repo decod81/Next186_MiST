@@ -123,6 +123,7 @@ module system (
 	input  CLK44100x256, // Soundwave
 	input  CLK14745600, // RS232 clk
 	input  clk_50, // OPL3
+	input  clk_OPL,
 
 	input  clk_cpu,
 	input  clk_dsp,
@@ -507,7 +508,8 @@ module system (
 		.hiaddr(cache_hi_addr),
 		.cache_write_data(crw && sys_rd_data_valid),
 		.cache_read_data(crw && sys_wr_data_valid),
-		.flush(auto_flush==2'b01) // decod81
+		//.flush(auto_flush==2'b01) // decod81
+		.flush(auto_flush==2'b10) // decod81
 	);
 
 	wire I_KB;
@@ -636,7 +638,7 @@ module system (
 	);
 
     opl3 opl3_inst (
-		.clk(clk_50),
+		.clk(clk_OPL),
 		.cpu_clk(clk_cpu),
 		.addr(PORT_ADDR[1:0]),
 		.din(CPU_DOUT[7:0]),
@@ -650,6 +652,7 @@ module system (
 	);
 
 	reg nop;
+	reg fifo_fill = 1;
 	always @ (posedge clk_sdr) begin
 		s_prog_full <= fifo_wr_used_words > 350; // AlmostFull
 		if(fifo_wr_used_words < 64) s_prog_empty <= 1'b1; // AlmostEmpty
@@ -663,17 +666,17 @@ module system (
 		s_vga_endframe <= vga_end_frame;
 		nop <= sys_cmd_ack == 2'b00;
 
-		sdraddr <= BIOS_WR ? BIOS_BASE + (BIOS_ADDR >> 1) : s_prog_empty || !(s_ddr_wr || s_ddr_rd) ? {6'b000001, vga_ddr_row_col + vga_lnbytecount} : {memmap_mux[8:0], cache_hi_addr[9:0], 4'b0000};
+		sdraddr <= BIOS_WR ? BIOS_BASE + (BIOS_ADDR >> 1) : (s_prog_empty && fifo_fill) || !(s_ddr_wr || s_ddr_rd) ? {6'b000001, vga_ddr_row_col + vga_lnbytecount} : {memmap_mux[8:0], cache_hi_addr[9:0], 4'b0000};
 		max_read <= &sdraddr[7:3] ? ~sdraddr[2:0] : 3'b111; // SDRAM row size = 512 words
 
 		BIOS_data_valid <= BIOS_WR;
 		BIOS_data <= BIOS_DIN;
 
 		if(BIOS_WR) cntrl0_user_command_register <= 2'b01;
-		else if(s_prog_empty) cntrl0_user_command_register <= 2'b10;	// read 32 bytes VGA
+		else if(s_prog_empty && fifo_fill) cntrl0_user_command_register <= 2'b10;	// read 32 bytes VGA
 		else if(s_ddr_wr) cntrl0_user_command_register <= 2'b01;		   // write 256 bytes cache
 		else if(s_ddr_rd) cntrl0_user_command_register <= 2'b11;		   // read 256 bytes cache
-		else if(~s_prog_full) cntrl0_user_command_register <= 2'b10;	// read 32 bytes VGA
+		else if(~s_prog_full && fifo_fill) cntrl0_user_command_register <= 2'b10;	// read 32 bytes VGA
 		else cntrl0_user_command_register <= 2'b00;
 
 		if(!crw && sys_rd_data_valid) col_counter <= col_counter - 1'b1;
@@ -685,7 +688,7 @@ module system (
 			end					
 			2'b01, 2'b11: crw <= !BIOS_WR; // cache read/write
 		endcase
-
+		if(vcount==445) fifo_fill <= 1;
 		if(s_vga_endscanline)
 		begin
 			col_counter[3:1] <= col_counter[3:1] - vga_lnbytecount[2:0];
@@ -704,7 +707,8 @@ module system (
 				half[0] <= halfreq;
 				repln_graph[0] <= replnreq;
 				vga_ddr_row_count <= 0;
-			end else vga_ddr_row_count <= vga_ddr_row_count + 1'b1; 
+				fifo_fill <= 0;
+			end else vga_ddr_row_count <= vga_ddr_row_count + 1'b1;
 		end else s_vga_endscanline <= (vga_lnbytecount[7:3] == vga_lnend);
 	end
 
@@ -722,7 +726,8 @@ module system (
 		end
 		if(KB_RST || BTN_RESET) rstcount <= 0;
 		else if(CPU_CE && ~rstcount[18]) rstcount <= rstcount + 1'b1;
-		auto_flush[1:0] <= {auto_flush[0], hblnk}; // decod81
+		auto_flush[1:0] <= {auto_flush[0], vblnk}; // decod81
+		//auto_flush[1:0] <= {auto_flush[0], hblnk}; // decod81
 	end
 
 	always @ (posedge clk_25)
